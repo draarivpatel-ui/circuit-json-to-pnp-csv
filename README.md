@@ -121,9 +121,10 @@ conversion retains PCB rotations without orientation warnings.
 
 ### Preparing supplier orientation metadata
 
-`populatePartOrientationMetadata` populates missing pin-1 metadata on a copy of routed
-Circuit JSON before conversion. It recovers authored frames from top-side
-numbered pads and looks up supplier frames using the supplied parts engine:
+`populatePartOrientationMetadata` prepares pin-1 metadata on a copy of routed
+Circuit JSON before conversion. It recovers the canonical unrotated top-facing
+authored frame from numbered pads on either PCB side and looks up supplier
+frames using the supplied parts engine:
 
 ```ts
 import {
@@ -155,8 +156,9 @@ unresolved or incompatible frames with component-specific errors. It does not
 move geometry, reroute, or mutate the input.
 
 Qualification covers fitted components with supplier part numbers, excluding DNP
-parts and test points. Bottom-side components need explicit `pin1_location`
-metadata because prebuilt JSON does not record the original footprint layer
-needed to undo mirroring safely. The helper does not fetch data for components
-without supplier part numbers; use `requireSupplierRotation` during conversion to
-require CAD alignment for every included row.
+parts and test points. Numbered physical pads take precedence over cached
+`pin1_location` values, including incorrect bottom-side frames emitted by older
+Core versions. Explicit frames remain a fallback when the geometry cannot be
+analyzed. The helper does not fetch data for components without supplier part
+numbers; use `requireSupplierRotation` during conversion to require CAD
+alignment for every included row.
