@@ -75,10 +75,10 @@ export const renderBottomSideRotation = (
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="675" viewBox="0 0 1000 675">
   <rect width="1000" height="675" fill="#0f172a"/>
   <g font-family="Arial, sans-serif">
-    <text x="24" y="34" fill="#f8fafc" font-size="24">JLCPCB placement rotation · top view of board</text>
+    <text x="24" y="34" fill="#f8fafc" font-size="24">Local component-view hypothesis · top view</text>
     <text x="24" y="64" fill="#cbd5e1" font-size="16">Solid pads: Circuit JSON · cyan outlines: CSV placement · gold pad and cyan ring: pin 1</text>
     ${panels}
-    <text x="24" y="658" fill="#94a3b8" font-size="14">Recorded SOD-123 diode and asymmetric SOT-23 controls from issue #41. No supplier-zero correction is assumed.</text>
+    <text x="24" y="658" fill="#94a3b8" font-size="14">Recorded SOD-123 / SOT-23 controls. Zero offset assumed. This is a local reconstruction, not JLCPCB UI.</text>
   </g>
 </svg>`
 }
