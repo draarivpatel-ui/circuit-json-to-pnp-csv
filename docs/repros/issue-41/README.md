@@ -45,4 +45,8 @@ Upload the common Gerbers and select both assembly sides. Upload the BOM and mai
 
 Current observed external result: JLCPCB accepted the Gerbers and detected a 24 x 16 mm two-layer PCB. Its assembly flow requires accepting its service terms before the BOM/CPL step. No JLCPCB component-placement or 3D preview has been captured yet.
 
+![Actual JLCPCB Gerber-upload checkpoint only](gerber-upload-only.jpg)
+
+The quote page automatically adds a 70 x 70 mm standard-assembly panel/edge-rail envelope. Its detected raw Gerber dimensions remain 24 x 16 mm; no CPL or component preview has been reached.
+
 The checked-in tests evaluate the proposed component-view contract; their success does not validate factory behavior. The behavioral proposal affects `{ supplier: "jlcpcb" }` on `layer: "bottom"`; generic conversion and other suppliers retain their current angles. The unresolved supplier-zero metadata warning/strict-mode contract is separate from this side hypothesis.
