@@ -1,3 +1,10 @@
+IMPORTANT: #43 is a side-angle fix, not a complete automatic supplier-correct export.
+The successful calibrated A/B below used an explicit +180-degree SOT-23 offset.
+
+A separate 2026-11-23 run uploaded CPL-actual-exporter.csv directly from the built #43 converter on the original reporter JSON. No CSV or orientation metadata edits. SHA-256: 7c8afcde37f5bb98ab67cf1e28329cbe6633cda1ab0912ad41c054b268a02e6c.
+Actual preview: D4 corrected; SOT-23 leads still misaligned. Eight missing-supplier-metadata warnings. The JSON has no selected supplier part numbers; the metadata helper changes nothing.
+See actual-exporter-provenance.json and jlcpcb-actual-exporter.png. No order/payment submitted. Neither PR merged.
+
 Public issue #41 reproduction. No order or purchase is authorized or submitted.
 
 Actual authenticated JLCPCB A/B preview completed 2026-11-23.

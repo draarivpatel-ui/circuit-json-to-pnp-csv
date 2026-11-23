@@ -1,8 +1,41 @@
 # Issue 41: bottom-side placement reproduction
 
-**The same-board A/B upload was completed in JLCPCB's authenticated assembly viewer on 2026-11-23. The calibrated proposed CSV aligns the recorded D4/U4 pads; the current converter reverses them.** This is preview evidence for the selected fixture and models, not a manufactured-board result or validation of every supplier part.
+**PR #43 fixes the JLCPCB bottom-side angle conversion only. It does not automatically produce a fully aligned CSV from the reporter's JSON.** The successful A/B comparison below used an explicitly supplied 180-degree SOT-23 calibration. That comparison must not be presented as verification of an unchanged automatic export.
 
-## Actual JLCPCB 3D comparison
+## Unchanged exporter output: still incomplete
+
+![Actual JLCPCB preview of the unchanged exporter output, with exact CSV rows](jlcpcb-actual-exporter.png)
+
+On 2026-11-23 we built #43 at `303524ddbb09a0f98b48a940aae2eb6b87e1089e` and called `convertCircuitJsonToPickAndPlaceCsv(originalReporterJson, { supplier: "jlcpcb" })`, with a diagnostic collector. We uploaded the returned string directly as `CPL-actual-exporter.csv`. No source orientation metadata, PCB geometry or CSV angles were edited. The parsed converter input remained unchanged; the output SHA-256 is `7c8afcde37f5bb98ab67cf1e28329cbe6633cda1ab0912ad41c054b268a02e6c`.
+
+JLCPCB's actual 3D preview shows that D4's cathode is corrected, while the chosen SOT-23 model's leads still fail to align on both sides. All eight exported rows report `missing_supplier_pin1_location`. The original JSON's supplier part-number arrays are empty and no supplier orientation maps are present. Calling `populatePartOrientationMetadata` without inventing part selections changes nothing. Therefore this is **not a complete automatic supplier-correct placement export**.
+
+[`actual-exporter-provenance.json`](actual-exporter-provenance.json) records the exact input/output hashes, built exporter revision, options, warnings and CSV. The unaltered top/bottom and upload captures are in [`jlcpcb/`](jlcpcb/).
+
+To repeat with the original `output/circuit.json` from the issue attachment:
+
+```sh
+bun run build
+bun docs/repros/issue-41/generate-unchanged-cpl.ts /path/to/reporter/output/circuit.json /path/to/CPL-actual-exporter.csv
+```
+
+The generator writes the converter's returned CSV without postprocessing. The separate provenance file records the result. It is intentionally not a script that adds a per-designator correction.
+
+## Where the complete solution belongs
+
+Keep the supplier-specific side conversion in this exporter; do not change Core's global PCB rotation convention to accommodate JLCPCB. Core/parts-engine should provide stable authored/supplier CAD frames and a separately sourced assembly-zero offset for the **selected** supplier part. Circuit JSON should preserve the distinction between a confirmed zero and missing factory data. The CLI's fabrication export should resolve the required metadata for prebuilt JSON and reject or explicitly flag unresolved assembly orientation instead of silently writing a supposedly verified placement file.
+
+Related existing work already separates these concepts:
+
+- [Circuit JSON #1006](https://github.com/tscircuit/circuit-json/pull/1006): separate supplier assembly-zero field; missing is unknown.
+- [Core #5461](https://github.com/tscircuit/core/pull/5461): carry that supplier offset through analysis and caching.
+- [PnP exporter #39](https://github.com/tscircuit/circuit-json-to-pnp-csv/pull/39): apply catalog assembly offsets separately from CAD alignment.
+
+All three were open and unmerged when checked. Their approach is complementary to the side-angle fix; they do not prove that the real catalog currently supplies correct offsets for C81598/C916374. The measured 180-degree correction in this experiment is a combined supplier alignment requirement; screenshots alone do not establish which portion is CAD alignment versus factory zero.
+
+Current official CLI source still calls the converter with `{ supplier: "jlcpcb" }`, without metadata preparation or strict mode ([CLI 9f08f0f](https://github.com/tscircuit/cli/blob/9f08f0ffeaef320222f4a94bd4cc1658b19f335e/lib/shared/export-snippet.ts#L459)). A complete integration should be verified with a real selected-part input, real supplier metadata and the unchanged generated CSV. No complete automatic integration is claimed here.
+
+## Calibrated A/B comparison: isolates the side conversion
 
 ![Actual JLCPCB 3D previews, exact uploaded CSV rows and pad-1 annotations](jlcpcb-bottom-3d-comparison.png)
 
@@ -15,7 +48,7 @@ Both uploads use the same 24 x 16 mm Gerbers, BOM, coordinates, part selections 
 | D3, bottom control | 0 | (0,180,0) | 0 | 0 | 0 | Same aligned placement |
 | U3, bottom control | 0 | (0,180,0) | 180 | 180 | 180 | Same aligned placement |
 
-The tested side conversion is `normalize(-pcb.rotation + supplierOffset)` for JLCPCB bottom rows. Top rows keep `normalize(pcb.rotation + supplierOffset)`. Generic exports and other suppliers retain their existing conventions. The native CAD's Euler z angle is **not the final vendor CSV angle**: U4's CAD z is 270, but its correctly calibrated JLCPCB row is 90. Different coordinate frames and supplier zeros must be accounted for separately.
+With those explicitly supplied offsets, the tested side conversion is `normalize(-pcb.rotation + supplierOffset)` for JLCPCB bottom rows. Top rows keep `normalize(pcb.rotation + supplierOffset)`. Generic exports and other suppliers retain their existing conventions. The native CAD's Euler z angle is **not the final vendor CSV angle**: U4's CAD z is 270, but its correctly calibrated JLCPCB row is 90. Different coordinate frames and supplier zeros must be accounted for separately.
 
 ## Supplier-zero control, before interpreting bottom rotation
 
