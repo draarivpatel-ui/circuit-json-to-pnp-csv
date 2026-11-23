@@ -36,6 +36,9 @@
     "jlcpcb/repro-generated-bottom.jpg": "da48b4ab7428e9c500edbe5bbae3c99ae62441640b585878b46820cc872b3e2d",
     "jlcpcb-automatic-comparison.png": "b7a85af0322f9952b3f6af2218224522cb76297804884ca2f8f7bb95e55e21ff",
     "jlcpcb-automatic-comparison.svg": "820f689d706108875ef6d736ebebbb4c01ebb4d70867e9373b5d174216a1164f",
-    "repro.circuit.tsx": "4ba92bb88aec041efb4d345c6b3a1d94527ff31de37b542a12b4d20e80a04ef9"
+    "legacy-fabrication.zip": "aa9a03d85630920a33a2b57435367b1327127cdadcf88862441b4f9876811c9b",
+    "legacy-verification.json": "bdf3c2ec505f2cb10eb39d9960ed735ab70994e929257957e3d5b9536f904c12",
+    "repro.circuit.tsx": "4ba92bb88aec041efb4d345c6b3a1d94527ff31de37b542a12b4d20e80a04ef9",
+    "selected-original.circuit.json": "ba581d6336eb986aff9ed8807f672a5138e540ae2a9d245334f6da378441e835"
   }
 }

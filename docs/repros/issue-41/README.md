@@ -26,6 +26,12 @@ The automatic reproduction CSV was independently generated from the same Core ou
 
 [verification.json](full-pipeline/verification.json) contains exact revisions, hashes, checks and raw-capture hashes. [fabrication.zip](full-pipeline/fabrication.zip) is the actual final CLI output. The generated Core fixture and original selected-part TSX are under `tests/assets/real-supplier/`.
 
+## Existing JSON with stale derived frames
+
+The original reporter JSON already contains incorrect cached authored frames for D3 and U3. The CLI now refreshes these derived fields from the unchanged numbered pads. Explicit metadata remains a fallback when pads cannot be analyzed; physical geometry is authoritative when available.
+
+We also ran the actual CLI on [selected-original.circuit.json](full-pipeline/selected-original.circuit.json), changing only supplier part-number selections and retaining every original geometry, angle and stale pin-1 field. The input file remained byte-identical. Its exported CSV has the same `a174e5…` SHA-256 as the exact file already verified in JLCPCB. No input metadata or CSV offset was edited. [Legacy verification](full-pipeline/legacy-verification.json) and [actual legacy export ZIP](full-pipeline/legacy-fabrication.zip) record this additional path.
+
 ## Coordinate frames
 
 For JLCPCB bottom placements: `normalize(-pcb.rotation + CAD_frame_difference + known_assembly_offset)`. For top placements, retain `+pcb.rotation`. The CAD difference and separately sourced factory offset are not negated. Missing factory data does not become an explicit zero.
