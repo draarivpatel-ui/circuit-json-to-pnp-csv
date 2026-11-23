@@ -96,7 +96,7 @@ for (const {
   label,
 } of cases) {
   test.failing(
-    `JLCPCB bottom ${rotation} degrees, ${label}, flip=${flip_y_axis}`,
+    `Component-view hypothesis: bottom ${rotation} degrees, ${label}, flip=${flip_y_axis}`,
     () => {
       const input = circuit({ rotation, ...metadata })
       const original = structuredClone(input)
@@ -127,24 +127,27 @@ for (const {
   )
 }
 
-test.failing("recorded diode and SOT-23 bottom/90 rows export 270", () => {
-  const rows = convertCircuitJsonToPickAndPlaceRows(fixture, {
-    supplier: "jlcpcb",
-    onRotationWarning: () => {},
-  })
-  expect(
-    rows.map(({ designator, rotation }) => [designator, rotation]),
-  ).toEqual([
-    ["D1", 0],
-    ["D2", 90],
-    ["D3", 0],
-    ["D4", 270],
-    ["U1", 0],
-    ["U2", 90],
-    ["U3", 0],
-    ["U4", 270],
-  ])
-})
+test.failing(
+  "component-view hypothesis: recorded bottom/90 rows would export 270",
+  () => {
+    const rows = convertCircuitJsonToPickAndPlaceRows(fixture, {
+      supplier: "jlcpcb",
+      onRotationWarning: () => {},
+    })
+    expect(
+      rows.map(({ designator, rotation }) => [designator, rotation]),
+    ).toEqual([
+      ["D1", 0],
+      ["D2", 90],
+      ["D3", 0],
+      ["D4", 270],
+      ["U1", 0],
+      ["U2", 90],
+      ["U3", 0],
+      ["U4", 270],
+    ])
+  },
+)
 
 const unresolvedCases = [
   { reason: "missing_pin1_location", metadata: {} },
@@ -161,7 +164,7 @@ const unresolvedCases = [
   },
 ] as const
 for (const { reason, metadata } of unresolvedCases) {
-  test.failing(`JLCPCB bottom fallback still diagnoses ${reason}`, () => {
+  test.failing(`component-view fallback still diagnoses ${reason}`, () => {
     const warnings: PickAndPlaceRotationWarning[] = []
     const opts = {
       supplier: "jlcpcb" as const,

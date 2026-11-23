@@ -1,0 +1,13 @@
+Public issue #41 reproduction. No order or purchase is authorized.
+
+Gerbers and both CPL files are generated from the same recorded board.
+The two CPL files differ only in D4 and U4 bottom rotations: main=90, proposed=270.
+No supplier-zero offset is applied. Zero-angle top and bottom controls must be checked in the real JLCPCB preview before interpreting the rotated cases.
+
+BOM identifiers are preview test selections, not IDs supplied by the reporter:
+1N4148W, ST(Semtech), SOD-123: https://jlcpcb.com/partdetail/1N4148W/C81598
+MMBT3904, JSMSEMI, SOT-23: https://jlcpcb.com/partdetail/C916374
+
+Upload sequence: gerbers.zip; choose assembly both sides; upload BOM.csv and CPL-main.csv; capture untouched top/bottom previews; repeat with CPL-proposed.csv without manual rotation corrections. Do not check out.
+
+Status: not uploaded to JLCPCB yet.
