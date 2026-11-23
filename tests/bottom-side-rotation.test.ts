@@ -38,7 +38,7 @@ const metadataCases: {
     },
   },
 ]
-// Also exercise the measured SOT-23 supplier zero (+180 degrees).
+// Also exercise the real SOT-23 CAD frame difference (+180 degrees).
 metadataCases.push({
   label: "+180 offset",
   offset: 180,
@@ -95,7 +95,11 @@ for (const {
           rotation: expectedRotation,
         },
       ])
-      expect(warnings).toHaveLength(label === "unverified" ? 1 : 0)
+      expect(warnings.map(({ reason }) => reason)).toEqual([
+        label === "unverified"
+          ? "missing_pin1_location"
+          : "missing_supplier_assembly_rotation",
+      ])
       expect(convertCircuitJsonToPickAndPlaceCsv(input, opts)).toBe(
         `Designator,Mid X,Mid Y,Layer,Rotation\r\nU1,12.500,${flip_y_axis ? "4.250" : "-4.250"},bottom,${expectedRotation}`,
       )
