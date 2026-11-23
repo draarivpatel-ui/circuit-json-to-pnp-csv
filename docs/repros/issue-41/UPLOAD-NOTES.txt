@@ -10,4 +10,4 @@ MMBT3904, JSMSEMI, SOT-23: https://jlcpcb.com/partdetail/C916374
 
 Upload sequence: gerbers.zip; choose assembly both sides; upload BOM.csv and CPL-main.csv; capture untouched top/bottom previews; repeat with CPL-proposed.csv without manual rotation corrections. Do not check out.
 
-Status: not uploaded to JLCPCB yet.
+Status: Gerbers uploaded and accepted by JLCPCB (24 x 16 mm, 2 layers). BOM/CPL placement preview is still pending the assembly-service terms confirmation. No order or payment was submitted.
