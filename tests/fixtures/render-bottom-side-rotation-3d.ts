@@ -152,15 +152,15 @@ export const renderBottomSideRotation3d = async (
 <rect width="1608" height="1895" fill="#f1f5f9"/>
 <g font-family="DejaVu Sans, sans-serif" fill="#0f172a">
 <text x="28" y="40" font-size="29" font-weight="700">Issue 41 | Real 3D geometry, exact stored angles and exact CSV rows</text>
-<text x="28" y="78" font-size="24" fill="#9a3412" font-weight="700">LOCAL HYPOTHESIS ONLY — not a JLCPCB upload, preview capture or manufacturing validation</text>
+<text x="28" y="78" font-size="24" fill="#9a3412" font-weight="700">LOCAL RECONSTRUCTION — separate real JLCPCB captures are in docs/repros/issue-41</text>
 <text x="28" y="114" font-size="21">Camera below the board (PCB Z&lt;0), looking up; PCB +Y is upward. Bodies lifted 2.2 mm to expose pads; XY and rotation are preserved.</text>
 ${panels.join("\n")}
 <text x="28" y="1680" font-size="21">Gold circles: recorded board pad centers. Cyan circles: authored numbered contact frame on the lifted CAD.</text>
 <text x="28" y="1716" font-size="21">Dashed lines join corresponding pin centers. Generic CAD dimensions are not supplier-zero calibration.</text>
 <text x="28" y="1754" font-size="22" font-weight="700">Observed: PCB rotation 90 deg and native CAD z=270 deg coexist in the same Circuit JSON.</text>
-<text x="28" y="1792" font-size="21">Hypothesis: JLCPCB reads bottom CSV angles in the CAD/component-view frame. Real preview must verify this.</text>
+<text x="28" y="1792" font-size="21">This local mapping omits supplier zeros. See the separate calibrated JLCPCB comparison for external evidence.</text>
 <text x="28" y="1830" font-size="20">Geometry: actual footprinter CAD via circuit-json-to-gltf; CPU rasterization by PoppyGL. This is not a JLCPCB capture.</text>
-<text x="28" y="1868" font-size="20">No supplier-specific zero offset is assumed. Check the top/0 and bottom/0 controls in the JLCPCB upload first.</text>
+<text x="28" y="1868" font-size="20">No supplier-specific zero offset is applied here. The vendor experiment checks top/0 and bottom/0 controls separately.</text>
 </g></svg>`
   return svg
 }

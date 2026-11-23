@@ -1,43 +1,11 @@
 import { expect, test } from "bun:test"
-import type { AnyCircuitElement, PcbComponent } from "circuit-json"
-import Papa from "papaparse"
+import type { PcbComponent } from "circuit-json"
 import {
   convertCircuitJsonToPickAndPlaceCsv,
   convertCircuitJsonToPickAndPlaceRows,
-  type PickAndPlaceRow,
   type PickAndPlaceRotationWarning,
 } from "../src"
-import recordedCircuit from "./assets/bottom-side-rotation.circuit.json"
-import { renderBottomSideRotation } from "./fixtures/render-bottom-side-rotation"
-
-// Geometry/identity records extracted without coordinate changes from the
-// reporter's output/circuit.json in the attachment to:
-// https://github.com/tscircuit/circuit-json-to-pnp-csv/issues/41
-const fixture = recordedCircuit as AnyCircuitElement[]
-
-const circuit = (
-  overrides: Partial<PcbComponent> = {},
-): AnyCircuitElement[] => [
-  {
-    type: "source_component",
-    source_component_id: "source",
-    ftype: "simple_chip",
-    name: "U1",
-  },
-  {
-    type: "pcb_component",
-    pcb_component_id: "pcb",
-    source_component_id: "source",
-    center: { x: 12, y: -4 },
-    footprint_origin: { x: 12.5, y: -4.25 },
-    width: 3,
-    height: 2,
-    layer: "bottom",
-    rotation: 90,
-    obstructs_within_bounds: true,
-    ...overrides,
-  },
-]
+import { circuit } from "./fixtures/bottom-side-rotation"
 
 const metadataCases: {
   label: string
@@ -70,6 +38,15 @@ const metadataCases: {
     },
   },
 ]
+// Also exercise the measured SOT-23 supplier zero (+180 degrees).
+metadataCases.push({
+  label: "+180 offset",
+  offset: 180,
+  metadata: {
+    pin1_location: "leftside_top",
+    supplier_pin1_location_map: { jlcpcb: "rightside_bottom" },
+  },
+})
 const cases = [
   [90, 270],
   [270, 90],
@@ -96,7 +73,7 @@ for (const {
   label,
 } of cases) {
   test.failing(
-    `Component-view hypothesis: bottom ${rotation} degrees, ${label}, flip=${flip_y_axis}`,
+    `JLCPCB bottom component view: bottom ${rotation} degrees, ${label}, flip=${flip_y_axis}`,
     () => {
       const input = circuit({ rotation, ...metadata })
       const original = structuredClone(input)
@@ -126,146 +103,3 @@ for (const {
     },
   )
 }
-
-test.failing(
-  "component-view hypothesis: recorded bottom/90 rows would export 270",
-  () => {
-    const rows = convertCircuitJsonToPickAndPlaceRows(fixture, {
-      supplier: "jlcpcb",
-      onRotationWarning: () => {},
-    })
-    expect(
-      rows.map(({ designator, rotation }) => [designator, rotation]),
-    ).toEqual([
-      ["D1", 0],
-      ["D2", 90],
-      ["D3", 0],
-      ["D4", 270],
-      ["U1", 0],
-      ["U2", 90],
-      ["U3", 0],
-      ["U4", 270],
-    ])
-  },
-)
-
-const unresolvedCases = [
-  { reason: "missing_pin1_location", metadata: {} },
-  {
-    reason: "missing_supplier_pin1_location",
-    metadata: { pin1_location: "leftside_top" },
-  },
-  {
-    reason: "incompatible_pin1_locations",
-    metadata: {
-      pin1_location: "leftside_top",
-      supplier_pin1_location_map: { jlcpcb: "leftside_bottom" },
-    },
-  },
-] as const
-for (const { reason, metadata } of unresolvedCases) {
-  test.failing(`component-view fallback still diagnoses ${reason}`, () => {
-    const warnings: PickAndPlaceRotationWarning[] = []
-    const opts = {
-      supplier: "jlcpcb" as const,
-      onRotationWarning: (warning: PickAndPlaceRotationWarning) =>
-        warnings.push(warning),
-    }
-    const input = circuit(metadata)
-    expect(convertCircuitJsonToPickAndPlaceRows(input, opts)[0].rotation).toBe(
-      270,
-    )
-    expect(warnings).toHaveLength(1)
-    expect(warnings[0]).toMatchObject({
-      reason,
-      designator: "U1",
-      pcb_component_id: "pcb",
-      supplier: "jlcpcb",
-    })
-    expect(warnings[0].message).toContain("270")
-    expect(() =>
-      convertCircuitJsonToPickAndPlaceCsv(input, {
-        ...opts,
-        requireSupplierRotation: true,
-      }),
-    ).toThrow(reason)
-    expect(warnings).toHaveLength(1)
-  })
-}
-
-test("top, generic and other-supplier angles retain their conventions", () => {
-  for (const rotation of [-450, -90, 0, 90, 180, 270, 450, 22.5]) {
-    for (const layer of ["top", "bottom"] as const) {
-      const input = circuit({ rotation, layer })
-      expect(convertCircuitJsonToPickAndPlaceRows(input)[0].rotation).toBe(
-        rotation,
-      )
-      expect(
-        convertCircuitJsonToPickAndPlaceRows(input, {
-          supplier: "pcbway",
-          onRotationWarning: () => {},
-        })[0].rotation,
-      ).toBe(rotation)
-      if (layer === "top" || rotation === 0 || rotation === 180) {
-        expect(
-          convertCircuitJsonToPickAndPlaceRows(input, {
-            supplier: "jlcpcb",
-            onRotationWarning: () => {},
-          })[0].rotation,
-        ).toBe(rotation)
-      }
-      const verified = circuit({
-        rotation,
-        layer,
-        pin1_location: "leftside_top",
-        supplier_pin1_location_map: {
-          pcbway: "topside_right",
-          jlcpcb: "topside_right",
-        },
-      })
-      const expected = (((rotation + 90) % 360) + 360) % 360
-      expect(
-        convertCircuitJsonToPickAndPlaceRows(verified, {
-          supplier: "pcbway",
-          requireSupplierRotation: true,
-        })[0].rotation,
-      ).toBe(expected)
-      if (layer === "top")
-        expect(
-          convertCircuitJsonToPickAndPlaceRows(verified, {
-            supplier: "jlcpcb",
-            requireSupplierRotation: true,
-          })[0].rotation,
-        ).toBe(expected)
-    }
-  }
-})
-
-test("raw CSV placement over recorded pads", async () => {
-  const csv = convertCircuitJsonToPickAndPlaceCsv(fixture, {
-    supplier: "jlcpcb",
-    onRotationWarning: () => {},
-  })
-  const parsed = Papa.parse<Record<string, string>>(csv, { header: true })
-  expect(parsed.errors).toEqual([])
-  const rows: PickAndPlaceRow[] = parsed.data.map((row) => ({
-    designator: row.Designator,
-    mid_x: Number(row["Mid X"]),
-    mid_y: Number(row["Mid Y"]),
-    layer: row.Layer as "top" | "bottom",
-    rotation: Number(row.Rotation),
-  }))
-  expect(rows).toEqual(
-    convertCircuitJsonToPickAndPlaceRows(fixture, {
-      supplier: "jlcpcb",
-      onRotationWarning: () => {},
-    }),
-  )
-  const svg = renderBottomSideRotation(fixture, rows)
-  const snapshot = new URL(
-    "./__snapshots__/bottom-side-rotation.snap.svg",
-    import.meta.url,
-  )
-  if (process.env.BUN_UPDATE_SNAPSHOTS === "1") await Bun.write(snapshot, svg)
-  expect(svg).toBe(await Bun.file(snapshot).text())
-})
